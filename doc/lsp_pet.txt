@@ -1,0 +1,70 @@
+*lsp_pet.txt*  A crab that scuttles while your LSP server boots / indexes
+
+==============================================================================
+INTRODUCTION                                                       *lsp_pet*
+
+A tiny two-row floating window in the bottom-right corner. While an LSP server
+is starting or reporting `$/progress`, a crab walks along a track:
+
+  ~~~~~~~~V(o_o)V...........@
+  42% rust_analyzer: Indexing 120/300
+
+Position equals the reported percentage; without a percentage the crab
+scuttles back and forth. When the server is done the crab celebrates; if the
+server dies while the pet is on screen, the crab does too.
+
+Nothing is drawn for servers that are ready within `show_delay` ms.
+
+==============================================================================
+SETUP                                                        *lsp_pet-setup*
+
+>lua
+  require("lsp_pet").setup({
+    -- all optional; these are the defaults
+    enabled = true,
+    width = 44,         -- float width in columns
+    frame_ms = 120,     -- animation interval
+    show_delay = 300,   -- draw nothing for servers ready sooner than this
+    grace_ms = 700,     -- keep the "working" look across gaps between tokens
+    done_ms = 1400,     -- how long the happy crab stays
+    dead_ms = 2500,     -- how long the dead crab stays
+    max_ms = 120000,    -- hide after this long (a new "begin" brings it back)
+    zindex = 40,
+    highlights = {},    -- per-group overrides, see below
+  })
+<
+
+`vim.g.lsp_pet = false` disables the plugin entirely.
+
+==============================================================================
+HIGHLIGHTS                                              *lsp_pet-highlights*
+
+By default colours are derived from the active colorscheme each time the
+window opens (and again on |ColorScheme| while it is visible).
+
+  LspPetTrack      track / window background    <- Comment
+  LspPetCrab       working (and the walked path) <- Orange, DiagnosticWarn
+  LspPetCrabSleep  server booting                <- Grey, Comment
+  LspPetCrabDone   ready                         <- Green, DiagnosticOk
+  LspPetCrabDead   server died                   <- Red, DiagnosticError
+
+To pin your own colours pass `highlights` to setup():
+>lua
+  require("lsp_pet").setup({
+    highlights = {
+      crab  = { fg = "#f74c00", bold = true },
+      done  = { link = "DiagnosticOk" },
+    },
+  })
+<
+Keys: track, crab, sleep, done, dead.
+
+==============================================================================
+COMMANDS                                                  *lsp_pet-commands*
+
+                                                              *:LspPetDemo*
+:LspPetDemo [spin|dead]
+    Play a fake boot sequence. No argument: boot, percentages, done.
+    `spin`: the server never reports a percentage. `dead`: the server dies.
+
+ vim:tw=78:ts=8:ft=help:norl:
